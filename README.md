@@ -152,6 +152,3 @@ npm test
 **Davies Esiro**  
 [GitHub Profile](https://github.com/daviesesiro)
 
----
-
-Let me know if there's anything else to modify!
