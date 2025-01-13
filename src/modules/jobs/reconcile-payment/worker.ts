@@ -11,7 +11,6 @@ import Payment, {
   PaymentStatus,
 } from "../../../database/models/payment.model";
 
-import { inventoryDB } from "../../../database/db";
 import { Worker } from "../utils";
 import { ReconcilePaymentQueue } from "./queue";
 import { MailerService } from "../../shared/mailer.service";
@@ -33,7 +32,10 @@ export type ReconcilePaymentJob = {
 export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
   readonly jobName = "reconcile-payment-job";
 
-  constructor(@Inject("logger") private logger: Logger, private mailerService: MailerService) {
+  constructor(
+    @Inject("logger") private logger: Logger,
+    private mailerService: MailerService
+  ) {
     this.logger = this.logger.child({}, { redact: ["*.processorResponse"] });
   }
 
@@ -103,27 +105,21 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
       throw new Error("inventory is no longer available");
     }
 
-    await inventoryDB.transaction(async (session) => {
-      await Payment.create(
-        [
-          {
-            currency: data.currency,
-            amount: data.amount,
-            user: userId,
-            status: PaymentStatus.Successful,
-            scope: PaymentScope.InventoryItemPayment,
-            inventory: inventory._id,
-            reference: data.reference,
-            processorRef: data.processorRef,
-            processor: data.processor,
-            processorResponse: data.processorResponse,
-            metadata: data.metadata,
-          },
-        ],
-        { session }
-      );
-
-      await Inventory.updateOne(
+    await Promise.all([
+      Payment.create({
+        currency: data.currency,
+        amount: data.amount,
+        user: userId,
+        status: PaymentStatus.Successful,
+        scope: PaymentScope.InventoryItemPayment,
+        inventory: inventory._id,
+        reference: data.reference,
+        processorRef: data.processorRef,
+        processor: data.processor,
+        processorResponse: data.processorResponse,
+        metadata: data.metadata,
+      }),
+      Inventory.updateOne(
         { _id: inventory._id },
         {
           $inc: { quantity: -1 },
@@ -134,12 +130,12 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
                 : inventory.status,
           },
         }
-      ).session(session);
+      ),
+    ]);
 
-      this.logger.info({
-        msg: "item payment successful",
-        inventory: inventory._id,
-      });
+    this.logger.info({
+      msg: "item payment successful",
+      inventory: inventory._id,
     });
 
     const user = await User.findById(userId);
@@ -148,7 +144,7 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
         name: inventory.name,
         inventory: inventory.name,
         price: inventory.price,
-        currency: inventory.currency
+        currency: inventory.currency,
       });
     }
   }

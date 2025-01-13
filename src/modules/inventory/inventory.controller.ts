@@ -15,6 +15,7 @@ import { GetAuthUser } from "../shared/decorators/auth-user.decorator";
 import { AuthGuard } from "../shared/middlewares/auth-guard.middleware";
 import {
   CreateInventoryDto,
+  GetInventoryPayments,
   InitiatePaymentDto,
   QueryInventoryDto,
   UpdateInventoryDto,
@@ -27,6 +28,14 @@ import InventoryService from "./inventory.service";
 export default class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
+  @Get("/payments")
+  async getPayments(
+    @GetAuthUser() auth: AuthData,
+    @QueryParams() query: GetInventoryPayments
+  ) {
+    return this.inventoryService.getInventoryPayments(auth, query);
+  }
+  
   @Post("/")
   async create(@GetAuthUser() auth: AuthData, @Body() dto: CreateInventoryDto) {
     return this.inventoryService.create(auth, dto);
@@ -56,11 +65,13 @@ export default class InventoryController {
     return this.inventoryService.remove(auth, id);
   }
 
-  @Delete("/:id/payment")
+  @Post("/:id/payments")
   async initiatePayment(
     @GetAuthUser() auth: AuthData,
-    @Body() dto: InitiatePaymentDto
+    @Body() dto: InitiatePaymentDto,
+    @Param("id") id: string
   ) {
+    dto.inventory = id;
     return this.inventoryService.initiatePayment(auth, dto);
   }
 }

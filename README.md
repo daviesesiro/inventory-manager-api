@@ -1,3 +1,7 @@
+Here's the updated README with the requested clarification about prices and amounts:
+
+---
+
 # Inventory Manager API
 
 Inventory Manager API is a Node.js-based application built with TypeScript, Express, and MongoDB. This application provides features for user authentication, inventory management, and payment processing.
@@ -9,6 +13,8 @@ Inventory Manager API is a Node.js-based application built with TypeScript, Expr
 - **Payments**: Integration with payment gateways like Paystack.
 - **Webhooks**: Reconcile inventory purchase upon successful payment.
 - **API Documentation**: Easily view API details at `/docs`.
+
+**Note**: All prices/amounts in this application are treated as kobo (or cents) to ensure precision during calculations and transactions.
 
 ## Tech Stack
 
@@ -117,11 +123,12 @@ This project is containerized with Docker and uses Docker Compose to manage mult
 - **GET** `/inventory/:id`: Get details of a specific inventory item.
 - **PUT** `/inventory/:id`: Update an inventory item.
 - **DELETE** `/inventory/:id`: Delete an inventory item.
-- **POST** `/payments`: Initiate a payment using Paystack.
+- **Get** `/inventory/payments`: Get payments for inventory [for current user].
+- **POST** `/inventory/payments`: Initiate a payment using Paystack.
 
 ### Webhook
 
-- **POST** `/webhook/paystack`: Handle payment status updates (webhook).
+- **POST** `/pub/webhook/paystack`: Handle payment status updates (webhook).
 
 ## Testing
 
@@ -151,4 +158,4 @@ npm test
 
 ---
 
-This README provides all necessary information to understand, set up, and contribute to your `inventory-manager-api` project. Let me know if you'd like any adjustments!
+Let me know if there's anything else to modify!

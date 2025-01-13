@@ -4,12 +4,13 @@ import { Service } from "typedi";
 import Inventory, { IInventory, InventoryStatus } from "../../database/models/inventory.model";
 import {
   CreateInventoryDto,
+  GetInventoryPayments,
   InitiatePaymentDto,
   QueryInventoryDto,
   UpdateInventoryDto
 } from "./dto/inventory.dto";
 import { PaystackService } from "../shared/http/paystack.service";
-import { InventoryItemMetadata, PaymentProcessor, PaymentScope } from "../../database/models/payment.model";
+import Payment, { InventoryItemMetadata, PaymentProcessor, PaymentScope } from "../../database/models/payment.model";
 import User from "../../database/models/user.model";
 import { escapeRegExp } from "../shared/utils";
 
@@ -123,10 +124,9 @@ export default class InventoryService {
       throw new BadRequestError("Inventory is not available");
     }
 
-    // maybe we need this?
-    // if (inventory.createdBy.equals(user._id)) {
-    //   throw new BadRequestError("You can not pay for your own inventory item")
-    // }
+    if (inventory.createdBy.equals(user._id)) {
+      throw new BadRequestError("You can not pay for your own inventory item")
+    }
 
     if (payload.processor === PaymentProcessor.Paystack) {
       const metadata: InventoryItemMetadata = {
@@ -152,6 +152,16 @@ export default class InventoryService {
     }
 
     throw new NotFoundError("Invalid payment method");
+  }
+
+  async getInventoryPayments(auth: AuthData, query: GetInventoryPayments) {
+    const payments = await Payment.paginate({ user: auth.userId }, {
+      page: query.page,
+      select: 'status reference amount currency',
+      populate: [{path: 'inventory', select: 'name description'}]
+    })
+
+    return payments;
   }
 
   private generateSKU(category: string) {

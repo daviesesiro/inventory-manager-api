@@ -49,7 +49,8 @@ const rcOptions = {
   defaultErrorHandler: false,
   controllers: [AuthController, WebhookController, InventoryController],
   middlewares: [AppErrorHandler],
-  classTransformer: false,
+  classTransformer: true,
+  validation: true,
 };
 
 useExpressServer(app, rcOptions);

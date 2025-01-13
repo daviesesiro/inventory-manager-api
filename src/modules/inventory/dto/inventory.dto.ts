@@ -1,6 +1,5 @@
 import {
   IsEnum,
-  IsMongoId,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -11,6 +10,7 @@ import {
 } from "class-validator";
 import { InventoryStatus } from "../../../database/models/inventory.model";
 import { PaymentProcessor } from "../../../database/models/payment.model";
+import { PaymentCurrency } from "../../../database/models/types";
 
 export class CreateInventoryDto {
   @IsString()
@@ -27,15 +27,15 @@ export class CreateInventoryDto {
   category: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1_00)
   price: number;
 
-  @IsString()
+  @IsEnum(PaymentCurrency)
   @IsNotEmpty()
   currency: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   quantity: number;
 
   @IsString()
@@ -45,6 +45,11 @@ export class CreateInventoryDto {
   @IsEnum(InventoryStatus)
   @IsOptional()
   status?: InventoryStatus;
+}
+
+enum QueryInventoryStatus {
+  Available = "available",
+  OutOfStock = "out_of_stock",
 }
 
 export class UpdateInventoryDto {
@@ -61,12 +66,11 @@ export class UpdateInventoryDto {
   category?: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsOptional()
   price?: number;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsEnum(PaymentCurrency)
   @IsOptional()
   @ValidateIf((o) => typeof o.price !== "undefined")
   currency?: string;
@@ -77,18 +81,12 @@ export class UpdateInventoryDto {
   quantity?: number;
 
   @IsString()
-  @IsNotEmpty()
   @IsOptional()
   sku?: string;
 
-  @IsEnum(InventoryStatus)
+  @IsEnum(QueryInventoryStatus)
   @IsOptional()
   status?: InventoryStatus;
-}
-
-enum QueryInventoryStatus {
-  Available = "available",
-  OutOfStock = "out_of_stock",
 }
 
 export class QueryInventoryDto {
@@ -105,17 +103,17 @@ export class QueryInventoryDto {
   status?: InventoryStatus;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsOptional()
   minPrice?: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsOptional()
   maxPrice?: number;
 
   @IsNumber()
-  @Min(0)
+  @Min(1)
   @IsOptional()
   page?: number;
 
@@ -125,11 +123,16 @@ export class QueryInventoryDto {
   limit?: number;
 }
 
+export class GetInventoryPayments {
+  @IsNumber()
+  @Min(1)
+  @IsOptional()
+  page?: number;
+}
+
 export class InitiatePaymentDto {
   @IsEnum(PaymentProcessor)
   processor: PaymentProcessor
 
-  @IsMongoId()
-  @IsNotEmpty()
   inventory: string
 }

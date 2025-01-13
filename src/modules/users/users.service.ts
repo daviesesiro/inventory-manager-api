@@ -118,7 +118,7 @@ export class UserService {
   async login(payload: LoginDto) {
     const user = await User.findOne({
       email: payload.email.toLowerCase(),
-    }).select("+password +refreshTokenVersion");
+    }).select("+password +refreshTokenVersion").lean();
     if (!user) {
       throw new BadRequestError("Invalid credentials");
     }
@@ -137,7 +137,7 @@ export class UserService {
     }
 
     const secretKey = this.configService.getRequired("jwtSecret");
-    const auth: AuthData = { userId: user.id, email: user.email };
+    const auth: AuthData = { userId: user._id.toString(), email: user.email };
 
     const tokens = createJwtTokens(
       auth,
