@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "CommonJS",
+    "declaration": true,
+    "allowJs": true,
+    "target": "es2021",
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
+  },
+
+  "include": [
+    "./src"
+  ],
+
+  "exclude": [
+    "node_modules"
+  ],
+
+  "ts-node": {
+    "transpileOnly": true
+  }
+} 
