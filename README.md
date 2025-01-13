@@ -1,7 +1,3 @@
-Here's the updated README with the requested clarification about prices and amounts:
-
----
-
 # Inventory Manager API
 
 Inventory Manager API is a Node.js-based application built with TypeScript, Express, and MongoDB. This application provides features for user authentication, inventory management, and payment processing.
