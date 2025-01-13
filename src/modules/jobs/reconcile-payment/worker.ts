@@ -1,6 +1,8 @@
 import { Logger } from "pino";
 import { Inject, Service } from "typedi";
-import Inventory from "../../../database/models/inventory.model";
+import Inventory, {
+  InventoryStatus,
+} from "../../../database/models/inventory.model";
 import Payment, {
   InventoryItemMetadata,
   IPayment,
@@ -59,7 +61,8 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
   }
 
   private async handleInventoryPayment(data: ReconcilePaymentJob) {
-    const { inventory: inventoryId, user: userId } = data.metadata as InventoryItemMetadata;
+    const { inventory: inventoryId, user: userId } =
+      data.metadata as InventoryItemMetadata;
     if (data.status !== "successful") {
       return this.logger.info("payment not successful");
     }
@@ -73,7 +76,10 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
       throw new Error("inventory not found");
     }
 
-    if (inventory.price !== data.amount || data.currency !== inventory.currency) {
+    if (
+      inventory.price !== data.amount ||
+      data.currency !== inventory.currency
+    ) {
       this.logger.error({
         msg: "invalid payment amount",
         expected: {
@@ -84,6 +90,15 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
 
       // TODO: log on Payment dispute
       throw new Error("invalid inventory payment received");
+    }
+
+    if (inventory.status !== InventoryStatus.Available || !inventory.quantity) {
+      this.logger.error({
+        msg: "inventory is no longer available",
+      });
+
+      // TODO: log on Payment dispute
+      throw new Error("inventory is no longer available");
     }
 
     await inventoryDB.transaction(async (session) => {
@@ -108,10 +123,21 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
 
       await Inventory.updateOne(
         { _id: inventory._id },
-        { $inc: { quantity: -1 } }
+        {
+          $inc: { quantity: -1 },
+          $set: {
+            status:
+              inventory.quantity === 1
+                ? InventoryStatus.OutOfStock
+                : inventory.status,
+          },
+        }
       ).session(session);
 
-      this.logger.info({ msg: "item payment successful", inventory: inventory._id });
+      this.logger.info({
+        msg: "item payment successful",
+        inventory: inventory._id,
+      });
     });
 
     // TODO: send payment notification via email

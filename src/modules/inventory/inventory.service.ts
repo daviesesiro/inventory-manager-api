@@ -119,6 +119,10 @@ export default class InventoryService {
       throw new BadRequestError("User not found");
     }
 
+    if (inventory.status !== InventoryStatus.Available || !inventory.quantity) {
+      throw new BadRequestError("Inventory is not available");
+    }
+
     // maybe we need this?
     // if (inventory.createdBy.equals(user._id)) {
     //   throw new BadRequestError("You can not pay for your own inventory item")
