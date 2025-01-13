@@ -15,12 +15,14 @@ import {
   VerifyEmailDto,
 } from "./dto/users.dto";
 import redisClient from "../shared/redis-client";
+import { MailerService } from "../shared/mailer.service";
 
 @Service()
 export class UserService {
   constructor(
     private hasher: PasswordHasher,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private mailerService: MailerService
   ) {}
 
   async register(payload: RegisterDto) {
@@ -41,11 +43,10 @@ export class UserService {
     const otp = randomNumber(100000, 999999).toString();
     await redisClient.setex("verify-email:" + user._id, 3600, otp);
 
-    // TODO: send an email to verify user's email
-    // await this.emailService.verifyUserEmail(user.email, {
-    //   name: user.name,
-    //   otp,
-    // });
+    await this.mailerService.verifyUserEmail(user.email, {
+      name: user.name,
+      otp,
+    });
 
     return {
       message: "Account created successfully",
@@ -71,8 +72,6 @@ export class UserService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-
-    // TODO: send welcome message
 
     return { message: "Email verified" };
   }
@@ -103,17 +102,16 @@ export class UserService {
     await redisClient.setex(windowId, 3600, Number(resendWindow) + 1);
 
     const otp = randomNumber(100000, 999999).toString();
-    await redisClient.setex(
-      "verify-email:" + user._id,
-      3600,
-      otp
-    );
+    await redisClient.setex("verify-email:" + user._id, 3600, otp);
 
-    // TODO: send verify email
+    await this.mailerService.verifyUserEmail(user.email, {
+      name: user.name,
+      otp,
+    });
 
     return {
       email: user.email,
-      name: user.name
+      name: user.name,
     };
   }
 
@@ -129,10 +127,24 @@ export class UserService {
       throw new BadRequestError("Invalid credentials");
     }
 
+    if (!user.emailVerified) {
+      return {
+        ...user,
+        verificationRequired: true,
+        refreshTokenVersion: undefined,
+        password: undefined,
+      };
+    }
+
     const secretKey = this.configService.getRequired("jwtSecret");
     const auth: AuthData = { userId: user.id, email: user.email };
 
-    const tokens = createJwtTokens(auth, secretKey, user.refreshTokenVersion, this.configService);
+    const tokens = createJwtTokens(
+      auth,
+      secretKey,
+      user.refreshTokenVersion,
+      this.configService
+    );
 
     return {
       message: "Login successful",
@@ -154,11 +166,10 @@ export class UserService {
         user._id.toString()
       ); // expires in 1hr
 
-      // TODO: send confirm password email, which will contain a link
-      // await this.emailService.confirmPasswordReset(user.email, {
-      //   code: hash,
-      //   name: user.name,
-      // });
+      await this.mailerService.confirmPasswordReset(user.email, {
+        code: hash,
+        name: user.name,
+      });
     }
 
     return {
@@ -184,9 +195,6 @@ export class UserService {
 
     const password = this.hasher.hash(payload.password);
     await User.updateOne({ _id: user._id }, { password });
-
-    // TODO: send email
-    // await this.emailService.passwordResetSuccessful(user.email, {name: user.name});
 
     return { message: "Password reset successful" };
   }

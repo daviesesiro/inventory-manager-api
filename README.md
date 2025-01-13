@@ -55,6 +55,11 @@ Before running the project, ensure you have the following installed:
       JWT_SECRET=
       REFRESH_JWT_SECRET=
       WHITELISTED_HOSTS=localhost
+
+      MAILGUN_API_KEY=mailgun-secret
+      MAILGUN_DOMAIN=mg.mailgun.com
+      MAIL_FROM="Inventory <no-reply@mailgun.com>"
+      APP_URL=localhost:3001
     ```
 
 4. Build the TypeScript project:

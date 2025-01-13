@@ -8,10 +8,9 @@ import Payment, {
   PaymentStatus,
 } from "../../../database/models/payment.model";
 import { createPinoLogger } from "../../shared/logger";
-import {
-  ReconcilePaymentJob,
-  ReconcilePaymentWorker,
-} from "./worker";
+import { ReconcilePaymentJob, ReconcilePaymentWorker } from "./worker";
+import { generateMockObject } from "../../../test/test/util";
+import { MailerService } from "../../shared/mailer.service";
 
 async function setup() {
   const inventory = await Inventory.create({
@@ -19,7 +18,7 @@ async function setup() {
     price: 100,
     currency: "NGN",
     createdBy: new ObjectId(),
-    category: 'Category',
+    category: "Category",
     quantity: 10,
     sku: "ITEM123",
   });
@@ -48,7 +47,14 @@ describe("ReconcilePaymentWorker", () => {
   let reconcilePaymentWorker: ReconcilePaymentWorker;
 
   beforeAll(async () => {
-    reconcilePaymentWorker = new ReconcilePaymentWorker(createPinoLogger());
+    const mailerService = generateMockObject(
+      "sendPaymentSuccessfulEmail"
+    ) as MailerService;
+
+    reconcilePaymentWorker = new ReconcilePaymentWorker(
+      createPinoLogger(),
+      mailerService
+    );
   });
 
   describe("run", () => {

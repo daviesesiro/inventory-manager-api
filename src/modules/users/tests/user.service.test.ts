@@ -16,6 +16,8 @@ import { UserService } from "../users.service";
 import redisClient from "../../shared/redis-client";
 import { createId } from "@paralleldrive/cuid2";
 import Container from "typedi";
+import { generateMockObject } from '../../../test/test/util';
+import { MailerService } from '../../shared/mailer.service';
 
 class MockConfigService {
   getRequired(key: string) {
@@ -46,10 +48,15 @@ describe("UserService", () => {
   let mockConfigService: jest.Mocked<ConfigService>;
 
   beforeAll(async () => {
+    const mailerService = generateMockObject(
+      "verifyUserEmail",
+      "confirmPasswordReset"
+    ) as MailerService;
     mockConfigService = new MockConfigService() as jest.Mocked<ConfigService>;
     userService = new UserService(
       new PasswordHasher(createPinoLogger()),
-      mockConfigService
+      mockConfigService,
+      mailerService
     );
   });
 

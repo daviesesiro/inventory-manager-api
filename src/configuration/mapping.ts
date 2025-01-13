@@ -9,7 +9,7 @@ export const configMapping = {
     required: false,
   },
   whitelistedHosts: {
-    env: 'WHITELISTED_HOSTS',
+    env: "WHITELISTED_HOSTS",
     required: true,
   },
   serviceId: {
@@ -41,8 +41,24 @@ export const configMapping = {
     required: true,
   },
   paystackApiKey: {
-    env: 'PAYSTACK_API_KEY',
+    env: "PAYSTACK_API_KEY",
     required: true,
+  },
+  mailgunApiKey: {
+    env: "MAILGUN_API_KEY",
+    required: true,
+  },
+  mailgunDomain: {
+    env: "MAILGUN_DOMAIN",
+    required: true,
+  },
+  mailFrom: {
+    env: "MAIL_FROM",
+    required: true,
+  },
+  appUrl: {
+    env: 'APP_URL',
+    required: true
   }
 } as const;
 export type ConfigKey = keyof typeof configMapping;

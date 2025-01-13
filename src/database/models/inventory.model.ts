@@ -13,7 +13,7 @@ export interface IInventory extends IDocument {
   name: string;
   description: string;
   category: string;
-  price: number;
+  price: number; // This is kobo/cents
   currency: string;
   quantity: number;
   sku: string;

@@ -14,6 +14,8 @@ import Payment, {
 import { inventoryDB } from "../../../database/db";
 import { Worker } from "../utils";
 import { ReconcilePaymentQueue } from "./queue";
+import { MailerService } from "../../shared/mailer.service";
+import User from "../../../database/models/user.model";
 
 export type ReconcilePaymentJob = {
   processor: PaymentProcessor;
@@ -31,7 +33,7 @@ export type ReconcilePaymentJob = {
 export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
   readonly jobName = "reconcile-payment-job";
 
-  constructor(@Inject("logger") private logger: Logger) {
+  constructor(@Inject("logger") private logger: Logger, private mailerService: MailerService) {
     this.logger = this.logger.child({}, { redact: ["*.processorResponse"] });
   }
 
@@ -140,7 +142,15 @@ export class ReconcilePaymentWorker implements Worker<ReconcilePaymentJob> {
       });
     });
 
-    // TODO: send payment notification via email
+    const user = await User.findById(userId);
+    if (user) {
+      await this.mailerService.sendPaymentSuccessfulEmail(user.email, {
+        name: inventory.name,
+        inventory: inventory.name,
+        price: inventory.price,
+        currency: inventory.currency
+      });
+    }
   }
 
   private async assertPaymentDoesNotExist(data: ReconcilePaymentJob) {

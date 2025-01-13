@@ -48,9 +48,11 @@ export class AuthController {
     const result = await this.usersService.login(dto);
     const { tokens, ...response } = result;
 
-    res.cookie("id", tokens.accessToken, cookieOpts);
-    res.cookie("rid", tokens.refreshToken, cookieOpts);
-
+    if (tokens) {
+      res.cookie("id", tokens.accessToken, cookieOpts);
+      res.cookie("rid", tokens.refreshToken, cookieOpts);
+    }
+ 
     return response;
   }
 

@@ -15,6 +15,7 @@ import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 const { defaultMetadataStorage } = require("class-transformer/cjs/storage");
 import * as swaggerUiExpress from "swagger-ui-express";
 import { routingControllersToSpec } from 'routing-controllers-openapi';
+import { getConfigService } from './configuration';
 
 const app = express();
 const whitelist = process.env.WHITELISTED_HOSTS?.split(",");
@@ -63,16 +64,17 @@ const spec = routingControllersToSpec(storage, rcOptions, {
   components: { schemas },
 });
 
-// TODO: probably don't expose this on prod
-app.use(
-  "/docs",
-  basicAuth({
-    challenge: true,
-    users: { inventory: "inventory" },
-  }),
-  swaggerUiExpress.serve,
-  swaggerUiExpress.setup(spec)
-);
+if (getConfigService().get("nodeEnv") !== "production") {
+  app.use(
+    "/docs",
+    basicAuth({
+      challenge: true,
+      users: { inventory: "inventory" },
+    }),
+    swaggerUiExpress.serve,
+    swaggerUiExpress.setup(spec)
+  );
+}
 
 // override express default 404 page
 app.use((_: Request, res: Response, __: NextFunction) => {

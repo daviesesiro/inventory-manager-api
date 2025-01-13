@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import Container, { ContainerInstance } from "typedi";
 import { ConfigService } from "../../configuration";
 import { createPinoLogger } from "./logger";
+import numeral from "numeral";
 
 export function createDiScopedContainer(id?: string) {
   const container = Container.of(id ?? createId());
@@ -93,4 +94,10 @@ export function verifyJwt(token: string, secret: string) {
 
 export function randomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function formatMoney(amount: number, currency?: string) {
+  let value = numeral(amount).divide(100).format("0,0.00");
+  if (currency) value = `${currency} ${value}`;
+  return value;
 }
