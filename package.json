@@ -5,6 +5,7 @@
   "scripts": {
     "build": "rm -rf dist/ && tsc -p tsconfig.build.json",
     "start": "node ./dist/server.js",
+    "start:worker": "node ./dist/worker.js",
     "dev": "tsc-watch --onSuccess 'node -r ts-node/register ./src/localserver.ts'",
     "test": "jest --runInBand"
   },
