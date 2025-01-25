@@ -1,10 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-import { createPinoLogger } from "../logger";
 import { createId } from "@paralleldrive/cuid2";
+import { NextFunction, Request, Response } from "express";
+import { getGlobalLogger } from "../logger";
 
 function requestLogger(req: Request, res: Response, next: NextFunction) {
-  req.logger = createPinoLogger();
-  req.logger.setBindings({
+  req.logger = getGlobalLogger().child({
     traceId: req.header("trace-id") || createId(),
   });
 

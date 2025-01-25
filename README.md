@@ -47,21 +47,27 @@ Before running the project, ensure you have the following installed:
 3. Create a `.env` file in the project root and add the following environment variables:
 
     ```env
-      PORT=3000
-      DB_URI=mongodb://mongo:27017/inventory
-      REDIS_URL=redis
-      PAYSTACK_API_KEY=your-paystack-secret
-      NODE_ENV=development
-      LOG_FORMAT=json
-      SERVICE_ID=inventory-app
-      JWT_SECRET=
-      REFRESH_JWT_SECRET=
-      WHITELISTED_HOSTS=localhost
+   PORT=3000
+   MONGO_HOST_PORT=28017
+   MONGO_CONTAINER_PORT=21212
+   REDIS_HOST_PORT=6380  
+   REDIS_CONTAINER_PORT=23323
 
-      MAILGUN_API_KEY=mailgun-secret
-      MAILGUN_DOMAIN=mg.mailgun.com
-      MAIL_FROM="Inventory <no-reply@mailgun.com>"
-      APP_URL=localhost:3001
+   DB_URI=mongodb://mongo:${MONGO_CONTAINER_PORT}/inventory-app
+   REDIS_URL=redis://redis:${REDIS_CONTAINER_PORT}
+
+   PAYSTACK_API_KEY=your-paystack-secret
+   NODE_ENV=development
+   LOG_FORMAT=json
+   SERVICE_ID=inventory-app
+   JWT_SECRET=
+   REFRESH_JWT_SECRET=
+   WHITELISTED_HOSTS=localhost
+
+   MAILGUN_API_KEY=mailgun-secret
+   MAILGUN_DOMAIN=mg.mailgun.com
+   MAIL_FROM="Inventory <no-reply@mailgun.com>"
+   APP_URL=localhost:3001
     ```
 
 4. Build the TypeScript project:

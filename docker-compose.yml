@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: inventory-manager-api
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
     depends_on:
       - mongo
       - redis
@@ -13,7 +13,15 @@ services:
       - app-network
     env_file:
       - .env
-
+    develop:
+      watch:
+        - action: rebuild
+          path: ./
+          target: /usr/src/app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
   worker:
     build:
       context: .
@@ -31,8 +39,9 @@ services:
   mongo:
     image: mongo:latest
     container_name: mongo-db
+    command: ["mongod", "--port", "${MONGO_CONTAINER_PORT}"]
     ports:
-      - "27017:27017"
+      - "${MONGO_HOST_PORT}:${MONGO_CONTAINER_PORT}"
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -42,9 +51,14 @@ services:
     image: redis:latest
     container_name: redis-server
     ports:
-      - "6379:6379"
+      - "${REDIS_HOST_PORT}:${REDIS_CONTAINER_PORT}"
     networks:
       - app-network
+    volumes:
+      - redis_data:/data/db
+    command: ["redis-server", "--port", "${REDIS_CONTAINER_PORT}"]
+    env_file:
+      - .env
 
 networks:
   app-network:
@@ -52,5 +66,7 @@ networks:
 
 volumes:
   mongodb_data:
+    driver: local
+  redis_data:
     driver: local
     

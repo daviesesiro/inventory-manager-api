@@ -15,10 +15,10 @@ jest.mock("../modules/shared/redis-client", () => ({
   del: jest.fn(),
 }));
 
-let mdbConnection: mongoose.Connection;
+let dbConnection: mongoose.Connection;
 
 beforeAll(async () => {
-  mdbConnection = await inventoryDB.asPromise();
+  dbConnection = await inventoryDB.asPromise();
 });
 
 afterEach(async () => {
@@ -32,5 +32,5 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await mdbConnection.close();
+  await dbConnection.close();
 });
