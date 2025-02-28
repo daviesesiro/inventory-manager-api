@@ -42,7 +42,7 @@ export default class InventoryService {
       limit = 10,
     } = query;
 
-    const filter: any = {};
+    const filter: any = { status: { $ne: InventoryStatus.Discontinued } };
 
     // TODO: create search index for category and name
     if (name) filter.name = new RegExp(escapeRegExp(name), "i");
